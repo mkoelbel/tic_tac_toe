@@ -75,8 +75,8 @@ def print_game_board(game_map):
         print(count, str(row).translate(translation))
 
 
-def game_board(game_map, player='_', row=0, column=0, make_move=True):
-    """ Make sure a move is valid, then make the move on the game board. """
+def check_valid_move(game_map, player='', row=0, column=0):
+    """ Check whether the move is in an open space. """
     try:
         # check to see if the position is open
         if game_map[row][column] != '_':
@@ -84,14 +84,9 @@ def game_board(game_map, player='_', row=0, column=0, make_move=True):
             print_game_board(game_map)
             print(f"\nPlayer {player}, please play in an open position.")
             return False
-        # only modify and print out the board if we're explicitly told to
-        if make_move:
-            # modify game board with new move
-            game_map[row][column] = player
-            # print out the new game board
-            print_game_board(game_map)
-            return game_map
-
+        else: 
+            return True
+    
     # if it doesn't work, print some error messages
     # except IndexError:
     #     print(f"\nPlayer {player}, please play a position between 0 and "
@@ -101,10 +96,14 @@ def game_board(game_map, player='_', row=0, column=0, make_move=True):
         print(str(e))
         return False
 
-    # if we've gotten to this point, then make_move is False
-    # (meaning we don't want to modify the board),
-    # but it IS a valid move, so return True
-    return True
+
+def make_move(game_map, player='', row=0, column=0):
+    """ Make the move on the game board. """
+    # modify game board with new move
+    game_map[row][column] = player
+    # print out the new game board
+    print_game_board(game_map)
+    return game_map
     
 
 def check_for_streak(iterable):
@@ -239,12 +238,12 @@ while play:
             # check if it's a valid move by trying to make the move,
             # but don't yet modify the game board
             if continue_playing:
-                valid_move = game_board(game, current_player, row_choice, column_choice, make_move=False)
+                valid_move = check_valid_move(game, current_player, row_choice, column_choice)
 
         # make their move! (and save the old game board, and output the new version of the game board)
         if continue_playing:
             old_game_board = game
-            game = game_board(game, current_player, row_choice, column_choice)
+            game = make_move(game, current_player, row_choice, column_choice)
             # check if the game is over
             game_over = check_game_over(game)
 
