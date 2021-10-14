@@ -14,47 +14,51 @@ def get_y_n(question):
         return True
     else:
         return False
+        
 
-
-def check_game_size_integer(entry):
-    """ Make sure player entered a number for their game board size. """
+def is_integer(entry):
+    """ Check that the entry is an integer. """
     try:
         int(entry)
         return True
     except ValueError:
+        return False
+
+
+def is_positive(entry):
+    """ Check that the entry is a positive number. """
+    return entry > 0
+
+
+def is_in_range(entry):
+    """ Check that the entry is within the range of the game board. """
+    return entry in range(game_size)
+
+
+def is_valid_game_size(entry):
+    """ Check that the player entered a valid game board size. """
+    if not is_integer(entry):
         print("\nPlease enter a number.")
         return False
-
-
-def check_game_size_positive(entry):
-    """ Make sure player entered a positive number for their game board size. """
-    if entry > 0:
-        return True
-    else:
+    elif not is_positive(int(entry)):
         print("\nPlease enter a number greater than 0. ")
         return False
-
-
-def check_integer(entry):
-    """ Make sure player entered a number for their move. """
-    try:
-        int(entry)
-        return True
-    except ValueError:
-        print_game_board(game)
-        print(f"\nPlayer {current_player}, please enter a number.")
-        return False
-
-
-def check_in_range(entry):
-    """ Make sure player entered a move that is within the game board. """
-    if entry in range(game_size):
-        return True
     else:
+        return True
+
+
+def is_valid_row_col(entry):
+    """ Check that the player entered a valid row or column. """
+    if not is_integer(entry):
         print_game_board(game)
-        print(f"\nPlayer {current_player}, please play a position between 0 "
-              f"and {game_size-1}.")
+        print(f"\nPlease enter a number.")
         return False
+    elif not is_in_range(int(entry)):
+        print_game_board(game)
+        print(f"\nPlease play a position between 0 and {game_size-1}.")
+        return False
+    else: 
+        return True
 
 
 def check_continue(entry):
@@ -154,7 +158,6 @@ def check_game_over(current_game):
     for row in current_game:
         for i in row:
             if i == '_':
-                print("Keep playing!")
                 return False
 
     # if we've gotten to this point, then no one has won
@@ -167,22 +170,13 @@ def check_game_over(current_game):
 play = True
 while play:
 
-    # set up original (standard) 3x3 game board
-    # game = [['_', '_', '_'],
-    #         ['_', '_', '_'],
-    #         ['_', '_', '_']]
-
-    game_size_integer = False
-    game_size_positive = False
+    valid_game_size = False
     # ask players what size board they want to play on, and make sure they enter something valid (positive integer)
-    while not (game_size_integer and game_size_positive):
+    while not valid_game_size:
         game_size = input("What size board to you want to play on?\n"
                           "Ex: 3\n")
-        game_size_integer = check_game_size_integer(game_size)
-        if game_size_integer:
-            # if game size is number, re-declare it as an integer, to be compatible with later functions
-            game_size = int(game_size)
-            game_size_positive = check_game_size_positive(game_size)
+        valid_game_size = is_valid_game_size(game_size)  
+    game_size = int(game_size)
 
     # set up game board
     game = [['_' for i in range(game_size)] for i in range(game_size)]
@@ -208,42 +202,37 @@ while play:
         while continue_playing and not valid_move:
             # players can end a game early by entering 'x'
             # instead of a number
-            print(f"\n(At anytime, to discontinue this game, enter 'x'.)"
-                  f"\nPlayer: {current_player}")
+            print(f"\nPlayer: {current_player}")
 
-            row_integer = False
-            column_integer = False
-            row_in_range = False
-            column_in_range = False
             # get the row and column choices from the player.
             # if they enter something invalid, catch that right away
-            while continue_playing and not (row_integer and row_in_range):
-                row_choice = (input("Which row?\n"))
+            valid_row = False
+            while continue_playing and not valid_row:
+                row_choice = (input("Which row?  (Enter 'x' to stop playing.)\n"))
                 continue_playing = check_continue(row_choice)
-                if continue_playing:
-                    row_integer = check_integer(row_choice)
-                    if row_integer:
-                        row_choice = int(row_choice)
-                        row_in_range = check_in_range(row_choice)
-
-            while continue_playing and (not column_integer or not column_in_range):
-                column_choice = (input("Which column?\n"))
-                continue_playing = check_continue(column_choice)
-                if continue_playing:
-                    column_integer = check_integer(column_choice)
-                    if column_integer:
-                        column_choice = int(column_choice)
-                        column_in_range = check_in_range(column_choice)
+                if not continue_playing:
+                    continue
+                valid_row = is_valid_row_col(row_choice)
+            row_choice = int(row_choice)
+            
+            valid_col = False
+            while continue_playing and not valid_col:
+                col_choice = (input("Which col?  (Enter 'x' to stop playing.)\n"))
+                continue_playing = check_continue(col_choice)
+                if not continue_playing:
+                    continue
+                valid_col = is_valid_row_col(col_choice)
+            col_choice = int(col_choice)
 
             # check if it's a valid move by trying to make the move,
             # but don't yet modify the game board
             if continue_playing:
-                valid_move = check_valid_move(game, current_player, row_choice, column_choice)
+                valid_move = check_valid_move(game, current_player, row_choice, col_choice)
 
         # make their move! (and save the old game board, and output the new version of the game board)
         if continue_playing:
             old_game_board = game
-            game = make_move(game, current_player, row_choice, column_choice)
+            game = make_move(game, current_player, row_choice, col_choice)
             # check if the game is over
             game_over = check_game_over(game)
 
