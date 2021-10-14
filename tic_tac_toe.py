@@ -8,7 +8,7 @@ def get_y_n(question):
     while not (y_n_option.casefold() == "y" or y_n_option.casefold() == "n"):
         if chances > 0:
             print("\nPlease enter 'Y' or 'N'.")
-        y_n_option = input(f"{question}? (Y/N)\n")
+        y_n_option = input(f"\n{question}? (Y/N)\n")
         chances += 1
     if y_n_option.casefold() == "y":
         return True
@@ -79,7 +79,7 @@ def print_game_board(game_map):
         print(count, str(row).translate(translation))
 
 
-def check_valid_move(game_map, player='', row=0, column=0):
+def is_open_space(game_map, player='', row=0, column=0):
     """ Check whether the move is in an open space. """
     try:
         # check to see if the position is open
@@ -92,10 +92,6 @@ def check_valid_move(game_map, player='', row=0, column=0):
             return True
     
     # if it doesn't work, print some error messages
-    # except IndexError:
-    #     print(f"\nPlayer {player}, please play a position between 0 and "
-    #           f"{len(game_map[0])-1}.")
-    #     return False
     except Exception as e:
         print(str(e))
         return False
@@ -200,34 +196,32 @@ while play:
 
         valid_move = False
         while continue_playing and not valid_move:
-            # players can end a game early by entering 'x'
-            # instead of a number
+            # players can end a game early by entering 'x' instead of a number
             print(f"\nPlayer: {current_player}")
-
-            # get the row and column choices from the player.
-            # if they enter something invalid, catch that right away
+            
+            # obtain a valid row choice
             valid_row = False
             while continue_playing and not valid_row:
                 row_choice = (input("Which row?  (Enter 'x' to stop playing.)\n"))
                 continue_playing = check_continue(row_choice)
-                if not continue_playing:
-                    continue
-                valid_row = is_valid_row_col(row_choice)
-            row_choice = int(row_choice)
+                if continue_playing:
+                    valid_row = is_valid_row_col(row_choice)
+                    if is_valid_row_col(row_choice):
+                        row_choice = int(row_choice)
             
+            # obtain a valid col choice
             valid_col = False
             while continue_playing and not valid_col:
                 col_choice = (input("Which col?  (Enter 'x' to stop playing.)\n"))
                 continue_playing = check_continue(col_choice)
-                if not continue_playing:
-                    continue
-                valid_col = is_valid_row_col(col_choice)
-            col_choice = int(col_choice)
+                if continue_playing:
+                    valid_col = is_valid_row_col(col_choice)
+                    if is_valid_row_col(col_choice):
+                        col_choice = int(col_choice)
 
-            # check if it's a valid move by trying to make the move,
-            # but don't yet modify the game board
+            # make sure the chosen space is empty
             if continue_playing:
-                valid_move = check_valid_move(game, current_player, row_choice, col_choice)
+                valid_move = is_open_space(game, current_player, row_choice, col_choice)
 
         # make their move! (and save the old game board, and output the new version of the game board)
         if continue_playing:
